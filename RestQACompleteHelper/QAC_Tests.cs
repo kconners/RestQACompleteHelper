@@ -78,7 +78,24 @@ namespace RestQACompleteHelper
             return item;
         }
 
+        public List<Tests> GetTests(string LastUpdateDate)
+        {
+            var client = new RestClient(conFIG.QACompleteEndPoint + "v1/projects/{projectID}/tests");
 
+            var request = new RestRequest(Method.GET);
+            request.AddUrlSegment("projectID", Project);
+            request.AddQueryParameter("Filter", "(active=true) AND (DateUpdated >= '" + LastUpdateDate + "')");
+            request.AddQueryParameter("limit", "2000");
+            request.AddHeader("Authorization", Auth);
+
+            var response = client.Execute(request);
+            string L = response.Content;
+
+
+            QACDataModel.TestsReturn testsReturn = JsonConvert.DeserializeObject<QACDataModel.TestsReturn>(L);
+
+            return testsReturn.results;
+        }
         public void SyncTestFromQACtoBPTestingApp( string Client_ShortName, string LastUpdateDate)
         {
             string Failed = "";
@@ -90,6 +107,7 @@ namespace RestQACompleteHelper
             var request = new RestRequest(Method.GET);
             request.AddUrlSegment("projectID", Project);
             request.AddQueryParameter("Filter", "(active=true) AND (DateUpdated >= '" + LastUpdateDate + "')");
+            request.AddQueryParameter("limit", "2000");
             request.AddHeader("Authorization", Auth);
 
             var response = client.Execute(request);

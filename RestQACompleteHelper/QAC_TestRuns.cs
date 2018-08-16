@@ -39,7 +39,27 @@ namespace RestQACompleteHelper
 
             return ReturnBody.results;
         }
-         public List<TestRuns> GetTestRuns(int releaseID, int testsetID)
+        public TestRuns GetTestRun(int runID)
+        {
+            TestRuns item = new TestRuns();
+
+            var client = new RestClient(conFIG.QACompleteEndPoint + "v2/projects/{projectID}/testruns/{runID}");
+
+            var request = new RestRequest(Method.GET);
+            request.AddUrlSegment("projectID", Project);
+            request.AddUrlSegment("runID", runID);
+            request.AddQueryParameter("limit", "10");
+            request.AddHeader("Authorization", Auth);
+
+            var response = client.Execute(request);
+            string L = response.Content;
+
+
+            item = JsonConvert.DeserializeObject<QACDataModel.TestRuns>(L);
+
+            return item;
+        }
+        public List<TestRuns> GetTestRuns(int releaseID, int testsetID, bool OnlyGiveAvailableRuns = false)
         {
             List<TestRuns> item = new List<TestRuns>();
 
@@ -48,7 +68,17 @@ namespace RestQACompleteHelper
             var request = new RestRequest(Method.GET);
             request.AddUrlSegment("projectID", Project);
             request.AddQueryParameter("limit", "1000");
-            request.AddQueryParameter("Filter", "(releaseId = " + Convert.ToString(releaseID) + " and testSetId = "+Convert.ToString(testsetID)+")");
+
+            if (OnlyGiveAvailableRuns == false)
+            {
+                request.AddQueryParameter("Filter", "(releaseId = " + Convert.ToString(releaseID) + " and testSetId = " + Convert.ToString(testsetID) + ")");
+            }
+
+            else if (OnlyGiveAvailableRuns == true)
+            {
+                request.AddQueryParameter("Filter", "(releaseId = " + Convert.ToString(releaseID) + " and testSetId = " + Convert.ToString(testsetID) + ")");
+            }
+
             request.AddHeader("Authorization", Auth);
 
             var response = client.Execute(request);
@@ -78,6 +108,42 @@ namespace RestQACompleteHelper
 
             return item;
         }
+
+        //public TestRuns PatchRun(QACDataModel.TestRuns run)
+        //{
+
+        //    var client = new RestClient(conFIG.QACompleteEndPoint + "v2/projects/{projectID}/testruns/{testRunID}");
+
+        //    var request = new RestRequest(Method.PATCH);
+        //    request.AddJsonBody(run);
+        //    request.AddUrlSegment("projectID", Project);
+        //    request.AddUrlSegment("testRunID", run.id);
+        //    request.AddHeader("Authorization", Auth);
+        //    request.AddHeader("Content-Type", "application/json");
+
+        //    var response = client.Execute(request);
+        //    string L = response.Content;
+
+        //    TestRuns item = new TestRuns();
+        //    item = JsonConvert.DeserializeObject<QACDataModel.TestRuns>(L);
+
+        //    return item;
+        //}
+
+
+        //public TestRuns SetRunTime(TestRuns run)
+        //{
+        //    List<TestRunItems> testRunItems = GetRunItems(run.id);
+        //    int runtime = 0;
+        //    foreach (var i in testRunItems)
+        //    {
+        //        runtime = runtime + i.run_time;
+        //    }
+
+        //    run.run_time = runtime;
+        //    return PatchRun(run);
+        //}
+
         public List<TestRunItems> GetRunItems(Int32 RunID)
         {
 
@@ -118,6 +184,26 @@ namespace RestQACompleteHelper
 
             return item;
         }
+        public List<TestRunItems> GetRunItemByTestCaseID(Int32 RunID, Int32 testsID)
+        {
+
+            var client = new RestClient(conFIG.QACompleteEndPoint + "v2/projects/{projectID}/testruns/{runID}/items");
+
+            var request = new RestRequest(Method.GET);
+            request.AddUrlSegment("runID", RunID);
+            request.AddQueryParameter("filter", "testId=" + Convert.ToString(testsID) + "");
+            request.AddUrlSegment("projectID", Project);
+            request.AddHeader("Authorization", Auth);
+            request.AddHeader("Content-Type", "application/json");
+
+            var response = client.Execute(request);
+            string L = response.Content;
+
+            TestRunItemsReturn item = new TestRunItemsReturn();
+            item = JsonConvert.DeserializeObject<QACDataModel.TestRunItemsReturn>(L);
+
+            return item.results;
+        }
         public class ItemUpdate
         {
             
@@ -137,7 +223,8 @@ namespace RestQACompleteHelper
                 public bool automated { get; set; }
                 public string configuration_name { get; set; }
                 public string test_host { get; set; }
-                public List<TestRunResult> test_run_results { get; set; }
+                public List<TestRunResult> steps { get; set; }
+                
 
         }
         public TestRunItems PostRunItem(TestRunItems testRunItems)
@@ -151,7 +238,7 @@ namespace RestQACompleteHelper
             itemUpdate.release_id = testRunItems.release_id;
             itemUpdate.release_name = testRunItems.release_name;
             itemUpdate.run_by_user_id = testRunItems.run_by_user_id;
-            itemUpdate.run_time = testRunItems.run_time;
+
             itemUpdate.status_code = testRunItems.status_code;
             itemUpdate.test_host = testRunItems.test_host;
             itemUpdate.test_id = testRunItems.test_id;
@@ -159,13 +246,16 @@ namespace RestQACompleteHelper
             itemUpdate.test_run_id = testRunItems.test_run_id;
             itemUpdate.test_set_id = testRunItems.test_set_id;
             itemUpdate.test_set_name = testRunItems.test_set_name;
-            itemUpdate.test_run_results = testRunItems.test_run_results;
+            itemUpdate.steps = testRunItems.test_run_results;
 
-            foreach (var i in itemUpdate.test_run_results)
+            foreach (var i in itemUpdate.steps)
             {
+                i.step_name = i.step;
                 i.actual_result = testRunItems.actualResult;
                 i.status_code = testRunItems.status_code;
             }
+
+            itemUpdate.run_time = testRunItems.run_time;
 
 
             var client = new RestClient(conFIG.QACompleteEndPoint + "v2/projects/{projectID}/testruns/{runID}/items/{runItemID}");

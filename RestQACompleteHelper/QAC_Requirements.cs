@@ -37,6 +37,39 @@ namespace RestQACompleteHelper
 
             return item;
         }
+        public Requirements PostRequirment(Requirements requirement)
+        {
+            requirement.project_id = Project;
+            var client = new RestClient(conFIG.QACompleteEndPoint + "v1/projects/{projectID}/requirements");
+
+            var request = new RestRequest(Method.POST);
+            request.AddJsonBody(requirement);
+            request.AddUrlSegment("projectID", Project);
+            request.AddHeader("Authorization", Auth);
+            request.AddHeader("Content-Type", "application/json");
+
+            var response = client.Execute(request);
+            string L = response.Content;
+            
+            return JsonConvert.DeserializeObject<QACDataModel.Requirements>(L);
+        }
+        public Requirements PutRequirment(Requirements requirement)
+        {
+            requirement.project_id = Project;
+            var client = new RestClient(conFIG.QACompleteEndPoint + "v1/projects/{projectID}/requirements/{requiermentID}");
+
+            var request = new RestRequest(Method.PUT);
+            request.AddJsonBody(requirement);
+            request.AddUrlSegment("projectID", Project);
+            request.AddUrlSegment("requiermentID", requirement.id);
+            request.AddHeader("Authorization", Auth);
+            request.AddHeader("Content-Type", "application/json");
+
+            var response = client.Execute(request);
+            string L = response.Content;
+
+            return JsonConvert.DeserializeObject<QACDataModel.Requirements>(L);
+        }
         public List<Requirements> GetRequirements()
         {
             List<Requirements> item = new List<Requirements>();

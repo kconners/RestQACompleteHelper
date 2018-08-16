@@ -128,6 +128,25 @@ namespace RestQACompleteHelper
 
             return item;
         }
+        public Release PutReleases(Release release)
+        {
+            release.project_id = Project;
+            var client = new RestClient(conFIG.QACompleteEndPoint + "v1/projects/{projectID}/releases");
+
+            var request = new RestRequest(Method.PUT);
+            request.AddJsonBody(release);
+            request.AddUrlSegment("projectID", Project);
+            request.AddHeader("Authorization", Auth);
+            request.AddHeader("Content-Type", "application/json");
+
+            var response = client.Execute(request);
+            string L = response.Content;
+
+            Release item = new Release();
+            item = JsonConvert.DeserializeObject<QACDataModel.Release>(L);
+
+            return item;
+        }
         public void RefReleaseRuns(string ReleaseNumber, string UserName)
         {
 

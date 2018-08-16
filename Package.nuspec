@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Simple.Tsting.QAComplete</id>
+    <version>1.0.0</version>
+    <authors>kconners</authors>
+    <owners>kconners</owners> 
+    <projectUrl>https://github.com/kconners/RestQACompleteHelper</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A simple utility that will work with the QAC Rest API</description>
+    <releaseNotes>init.</releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>KDC</tags>
+    <dependencies>
+	  <dependency id="Newtonsoft.Json" version="11.0.2" />
+	  <dependency id="RestSharp" version="106.2.2" />
+    </dependencies>
+  </metadata>
+  <files>
+  <file src= "Z:\QA\Tools\LocallyGrownApps\Models\QACDataModel.dll" target= "lib\QACDataModel.dll"/>
+  </files>
+</package>
